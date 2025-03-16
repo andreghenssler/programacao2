@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_ALUNOS 10
+#define ARQUIVO "alunos.bin"
+
+// Estrutura para armazenar informações de cada aluno
+typedef struct {
+    char nome[50];
+    int matricula;
+    float notas[3];
+    float media;
+} Aluno;
+
+// Função para adicionar um novo aluno à turma
+void adicionarAluno(Aluno turma[], int *numAlunos) {
+    if (*numAlunos >= MAX_ALUNOS) {
+        printf("Erro: Capacidade máxima da turma atingida.\n");
+        return;
+    }
+
+    Aluno novoAluno;
+
+    printf("Digite o nome do aluno: ");
+    fgets(novoAluno.nome, sizeof(novoAluno.nome), stdin);
+    novoAluno.nome[strcspn(novoAluno.nome, "\n")] = '\0';  // Remover o '\n' do final
+
+    printf("Digite a matrícula do aluno: ");
+    scanf("%d", &novoAluno.matricula);
+
+    printf("Digite as três notas do aluno (separadas por espaço): ");
+    scanf("%f %f %f", &novoAluno.notas[0], &novoAluno.notas[1], &novoAluno.notas[2]);
+
+    // Calcular a média
+    novoAluno.media = (novoAluno.notas[0] + novoAluno.notas[1] + novoAluno.notas[2]) / 3.0;
+
+    // Limpar o buffer do teclado
+    while (getchar() != '\n');
+
+    // Adicionar o novo aluno à turma
+    turma[*numAlunos] = novoAluno;
+    (*numAlunos)++;
+
+    printf("Aluno adicionado com sucesso.\n");
+}
+
+// Função para listar todos os alunos cadastrados
+void listarAlunos(Aluno turma[], int numAlunos) {
+    printf("\nLista de Alunos:\n");
+
+    if (numAlunos == 0) {
+        printf("Nenhum aluno cadastrado.\n");
+        return;
+    }
+
+    for (int i = 0; i < numAlunos; i++) {
+        printf("\nAluno %d:\n", i + 1);
+        printf("Nome: %s\n", turma[i].nome);
+        printf("Matrícula: %d\n", turma[i].matricula);
+        printf("Notas: %.2f, %.2f, %.2f\n", turma[i].notas[0], turma[i].notas[1], turma[i].notas[2]);
+        printf("Média: %.2f\n", turma[i].media);
+    }
+}
+
+// Função para salvar os dados da turma em um arquivo binário
+void salvarDados(Aluno turma[], int numAlunos) {
+    FILE *arquivo = fopen(ARQUIVO, "wb");
+
+    if (arquivo == NULL) {
+        perror("Erro ao abrir o arquivo");
+        return;
+    }
+
+    fwrite(turma, sizeof(Aluno), numAlunos, arquivo);
+
+    fclose(arquivo);
+
+    printf("Dados salvos com sucesso no arquivo '%s'.\n", ARQUIVO);
+}
+
+// Função principal
+int main() {
+    Aluno turma[MAX_ALUNOS];
+    int numAlunos = 0;
+    int opcao;
+
+    do {
+        printf("\n### MENU ###\n");
+        printf("1. Adicionar novo aluno\n");
+        printf("2. Listar alunos\n");
+        printf("3. Salvar dados em arquivo\n");
+        printf("4. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1:
+                adicionarAluno(turma, &numAlunos);
+                break;
+            case 2:
+                listarAlunos(turma, numAlunos);
+                break;
+            case 3:
+                salvarDados(turma, numAlunos);
+                break;
+            case 4:
+                printf("Saindo do programa.\n");
+                break;
+            default:
+                printf("Opção inválida. Tente novamente.\n");
+        }
+    } while (opcao != 4);
+
+    return 0;
+}
